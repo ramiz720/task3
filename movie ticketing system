@@ -1,0 +1,147 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+
+// Define the Movie struct to store movie information
+struct Movie {
+    std::string title;
+    double price;
+    int availableSeats;
+};
+
+// Define the Seat struct to represent a seat in the theater
+struct Seat {
+    int row;
+    int column;
+    bool isBooked;
+};
+
+class MovieTicketBookingSystem {
+public:
+    MovieTicketBookingSystem() {
+        // Initialize movies and seats
+        initializeMovies();
+        initializeSeats();
+    }
+
+    // Display a list of available movies
+    void displayMovieList() {
+        std::cout << "Available Movies:\n";
+        for (size_t i = 0; i < movies.size(); i++) {
+            std::cout << i + 1 << ". " << movies[i].title << " ($" << movies[i].price << ")\n";
+        }
+    }
+
+    // Display the seating arrangement for a selected movie
+    void displaySeatingArrangement(int movieIndex) {
+        if (movieIndex >= 0 && movieIndex < movies.size()) {
+            std::cout << "Seating Arrangement for " << movies[movieIndex].title << ":\n";
+            for (int row = 0; row < numRows; row++) {
+                for (int col = 0; col < numCols; col++) {
+                    Seat& seat = seats[movieIndex][row][col];
+                    if (seat.isBooked) {
+                        std::cout << "X ";
+                    } else {
+                        std::cout << "O ";
+                    }
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+
+    // Book seats for a selected movie
+    void bookSeats(int movieIndex, int numSeats) {
+        if (movieIndex >= 0 && movieIndex < movies.size()) {
+            int bookedCount = 0;
+            while (bookedCount < numSeats) {
+                int row, col;
+                std::cout << "Enter the row and column for seat " << bookedCount + 1 << ": ";
+                std::cin >> row >> col;
+
+                if (row >= 1 && row <= numRows && col >= 1 && col <= numCols) {
+                    Seat& seat = seats[movieIndex][row - 1][col - 1];
+                    if (!seat.isBooked) {
+                        seat.isBooked = true;
+                        bookedCount++;
+                        std::cout << "Seat " << row << "-" << col << " booked successfully.\n";
+                    } else {
+                        std::cout << "Seat " << row << "-" << col << " is already booked. Please choose another seat.\n";
+                    }
+                } else {
+                    std::cout << "Invalid seat selection. Please choose a valid seat.\n";
+                }
+            }
+            // Calculate and display the total cost
+            double totalCost = numSeats * movies[movieIndex].price;
+            std::cout << "Total Cost: $" << totalCost << std::endl;
+        }
+    }
+
+private:
+    static const int numRows = 5;
+    static const int numCols = 5;
+
+    std::vector<Movie> movies;
+    std::vector<std::vector<std::vector<Seat>>> seats;  // A 3D array for seats
+
+    void initializeMovies() {
+        movies.push_back({ "Movie 1", 10.0, numRows * numCols });
+        movies.push_back({ "Movie 2", 12.0, numRows * numCols });
+        movies.push_back({ "Movie 3", 9.0, numRows * numCols });
+    }
+
+    void initializeSeats() {
+        seats.resize(movies.size(), std::vector<std::vector<Seat>>(numRows, std::vector<Seat>(numCols)));
+
+        // Initialize all seats as unbooked
+        for (int movieIndex = 0; movieIndex < movies.size(); movieIndex++) {
+            for (int row = 0; row < numRows; row++) {
+                for (int col = 0; col < numCols; col++) {
+                    seats[movieIndex][row][col] = { row, col, false };
+                }
+            }
+        }
+    }
+};
+
+int main() {
+    MovieTicketBookingSystem bookingSystem;
+    int choice;
+
+    while (true) {
+        std::cout << "\nMovie Ticket Booking System\n";
+        std::cout << "1. View Movie Listings\n";
+        std::cout << "2. Select Movie and Book Seats\n";
+        std::cout << "3. Exit\n";
+        std::cout << "Enter your choice: ";
+        std::cin >> choice;
+
+        if (choice == 1) {
+            bookingSystem.displayMovieList();
+        } else if (choice == 2) {
+            int movieIndex, numSeats;
+            bookingSystem.displayMovieList();
+            std::cout << "Enter the movie number: ";
+            std::cin >> movieIndex;
+            movieIndex--;
+
+            if (movieIndex >= 0 && movieIndex < bookingSystem.movies.size()) {
+                std::cout << "Enter the number of seats to book: ";
+                std::cin >> numSeats;
+                bookingSystem.displaySeatingArrangement(movieIndex);
+                bookingSystem.bookSeats(movieIndex, numSeats);
+            } else {
+                std::cout << "Invalid movie selection.\n";
+            }
+        } else if (choice == 3) {
+            std::cout << "Thank you for using the Movie Ticket Booking System. Goodbye!\n";
+            break;
+        } else {
+            std::cout << "Invalid choice. Please select a valid option.\n";
+        }
+    }
+
+    return 0;
+}
